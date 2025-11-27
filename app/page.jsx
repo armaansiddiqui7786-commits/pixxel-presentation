@@ -1,80 +1,74 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
-import Particles from "react-tsparticles"
-import { loadSlim } from "tsparticles-slim"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  ChevronLeft,
-  ChevronRight,
-  Rocket,
-  Users,
-  Cpu,
-  DollarSign,
-  TrendingUp,
-  Target,
-  Leaf,
-  Shield,
-  Telescope,
-  Home,
-} from "lucide-react"
+import { useState, useEffect } from "react"
+import * as LucideIcons from "lucide-react"
 
-// Particle configuration for space effect
-const particlesOptions = {
-  background: {
-    color: { value: "#0b0c10" },
-  },
-  fpsLimit: 60,
-  interactivity: {
-    events: {
-      onHover: {
-        enable: true,
-        mode: "repulse",
-      },
-      resize: true,
-    },
-    modes: {
-      repulse: {
-        distance: 120,
-        duration: 0.4,
-      },
-    },
-  },
-  particles: {
-    color: { value: "#ffffff" },
-    links: {
-      color: "#7F56D9",
-      distance: 150,
-      enable: true,
-      opacity: 0.15,
-      width: 1,
-    },
-    move: {
-      enable: true,
-      speed: 0.8,
-      direction: "none",
-      random: true,
-      straight: false,
-      outModes: "out",
-    },
-    number: {
-      density: {
-        enable: true,
-        area: 900,
-      },
-      value: 100,
-    },
-    opacity: {
-      value: 0.6,
-    },
-    shape: {
-      type: "circle",
-    },
-    size: {
-      value: { min: 1, max: 3 },
-    },
-  },
-  detectRetina: true,
+const { ChevronLeft, ChevronRight, Rocket, Users, Cpu, DollarSign, TrendingUp, Target, Leaf, Shield, Telescope, Home } =
+  LucideIcons
+
+// Starfield background component - pure CSS
+function Starfield() {
+  const [stars, setStars] = useState([])
+
+  useEffect(() => {
+    const newStars = []
+    for (let i = 0; i < 150; i++) {
+      newStars.push({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.8 + 0.2,
+        delay: Math.random() * 3,
+      })
+    }
+    setStars(newStars)
+  }, [])
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full bg-white star-pulse"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            opacity: star.opacity,
+            animationDelay: `${star.delay}s`,
+          }}
+        />
+      ))}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl" />
+    </div>
+  )
+}
+
+// Glass card component
+function GlassCard({ children, className = "" }) {
+  return (
+    <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 ${className}`}>{children}</div>
+  )
+}
+
+// Animated bar component
+function AnimatedBar({ percentage, color, delay = 0 }) {
+  const [width, setWidth] = useState(0)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWidth(percentage), delay)
+    return () => clearTimeout(timer)
+  }, [percentage, delay])
+
+  return (
+    <div
+      className="h-full rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+      style={{ width: `${width}%`, backgroundColor: color }}
+    />
+  )
 }
 
 // Funding data for chart
@@ -92,13 +86,6 @@ const revenueData = [
   { year: "FY24", revenue: 28.7, loss: 20.4 },
 ]
 
-// Glass card component
-function GlassCard({ children, className = "" }) {
-  return (
-    <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 ${className}`}>{children}</div>
-  )
-}
-
 // Bar chart component
 function BarChart({ data, dataKey, label, color = "#7F56D9" }) {
   const maxValue = Math.max(...data.map((d) => d[dataKey]))
@@ -109,732 +96,664 @@ function BarChart({ data, dataKey, label, color = "#7F56D9" }) {
         <div key={index} className="flex items-center gap-4">
           <span className="text-xs text-gray-400 w-12">{item.year}</span>
           <div className="flex-1 bg-white/10 rounded-full h-6 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${(item[dataKey] / maxValue) * 100}%` }}
-              transition={{ duration: 1, delay: index * 0.1 }}
-              className="h-full rounded-full flex items-center justify-end pr-2"
-              style={{ backgroundColor: color }}
-            >
-              <span className="text-xs font-semibold text-white">${item[dataKey]}M</span>
-            </motion.div>
+            <AnimatedBar percentage={(item[dataKey] / maxValue) * 100} color={color} delay={index * 100} />
           </div>
+          <span className="text-sm text-white w-16">${item[dataKey]}M</span>
         </div>
       ))}
     </div>
   )
 }
 
-// Slide 1: Landing
-function Slide1({ onLaunch }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-400 via-violet-500 to-purple-600 bg-clip-text text-transparent mb-6">
-          PIXXEL
-        </h1>
-      </motion.div>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="text-xl md:text-2xl text-gray-300 mb-4"
-      >
-        The Health Monitor for the Planet
-      </motion.p>
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-sm md:text-base text-gray-500 max-w-xl mb-8"
-      >
-        Seeing the unseen. From BITS Pilani to the World&apos;s Highest-Resolution Hyperspectral Constellation.
-      </motion.p>
-      <motion.button
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        onClick={onLaunch}
-        className="group flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-8 py-4 rounded-full font-semibold transition-all"
-      >
-        <Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        Launch Mission
-      </motion.button>
-    </div>
-  )
-}
-
-// Slide 2: Genesis
-function Slide2() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Genesis</h2>
-        <p className="text-purple-400 mb-8">The BITS Pilani Crucible</p>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <GlassCard className="md:col-span-2">
-            <p className="text-gray-300 leading-relaxed">
-              The story of Pixxel begins not in a corporate boardroom, but in the dormitories of the
-              <span className="text-purple-400 font-semibold">
-                {" "}
-                Birla Institute of Technology and Science (BITS) Pilani
-              </span>
-              , one of India&apos;s premier engineering institutes. In 2017, the founders were part of
-              <span className="text-purple-400 font-semibold"> Hyperloop India</span>—the only Indian finalists at the
-              SpaceX Hyperloop Pod Competition, traveling to SpaceX HQ in Hawthorne, California.
-            </p>
-          </GlassCard>
-
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center">
-                <Home className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Origin</h3>
-            </div>
-            <p className="text-gray-400">BITS Pilani, Rajasthan</p>
-          </GlassCard>
-
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center">
-                <Rocket className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Pre-cursor</h3>
-            </div>
-            <p className="text-gray-400">Hyperloop India (SpaceX Pod Competition Finalists)</p>
-          </GlassCard>
-
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Incorporation</h3>
-            </div>
-            <p className="text-gray-400">February 2019</p>
-          </GlassCard>
-
-          <GlassCard>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center">
-                <Telescope className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Philosophy</h3>
-            </div>
-            <p className="text-gray-400">&quot;Space 2.0&quot; Democratization</p>
-          </GlassCard>
-        </div>
-
-        <GlassCard className="mt-6">
-          <h3 className="text-lg font-semibold text-white mb-3">The Pivot</h3>
-          <p className="text-gray-300 leading-relaxed">
-            While working on Hyperloop, they realized existing Earth Observation satellites were
-            <span className="text-red-400 font-semibold"> &quot;colorblind&quot;</span>—they could see shapes but not
-            detailed chemistry. The world needed a{" "}
-            <span className="text-purple-400 font-semibold">&quot;health monitor&quot;</span> capable of spectral
-            analysis, not just visual observation.
-          </p>
-        </GlassCard>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 3: Founders
-function Slide3() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Visionaries</h2>
-        <p className="text-purple-400 mb-8">From Student Engineers to Space CEOs</p>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <GlassCard className="group hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
-                AA
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">Awais Ahmed</h3>
-                <p className="text-purple-400">CEO & Co-Founder</p>
-              </div>
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              Born in the village of Aldur, Karnataka, Ahmed grew up without internet access until the 8th grade,
-              relying on encyclopedias to fuel his fascination with space. At BITS Pilani, he pursued a Master&apos;s in
-              Mathematics.
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              <span className="px-3 py-1 bg-purple-600/30 rounded-full text-xs text-purple-300">
-                Strategic Visionary
-              </span>
-              <span className="px-3 py-1 bg-purple-600/30 rounded-full text-xs text-purple-300">BITS Pilani</span>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="group hover:bg-white/10 transition-all duration-300">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white">
-                KK
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">Kshitij Khandelwal</h3>
-                <p className="text-purple-400">CTO & Co-Founder</p>
-              </div>
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              The engineering backbone who spearheaded the immense technical challenge of miniaturizing a hyperspectral
-              camera—traditionally the size of a refrigerator—into a payload that fits on a microsatellite (~50kg).
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              <span className="px-3 py-1 bg-purple-600/30 rounded-full text-xs text-purple-300">Hardware Expert</span>
-              <span className="px-3 py-1 bg-purple-600/30 rounded-full text-xs text-purple-300">BITS Pilani</span>
-            </div>
-          </GlassCard>
-        </div>
-
-        <GlassCard className="mt-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Users className="w-6 h-6 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">Team Growth</h3>
-          </div>
-          <p className="text-gray-300">
-            From 2 founders to <span className="text-purple-400 font-bold">160+ engineers</span> building the future of
-            Earth observation.
-          </p>
-        </GlassCard>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 4: Technology
-function Slide4() {
-  const specs = [
-    { label: "Resolution", value: "5 Meters", highlight: "Best-in-class" },
-    { label: "Spectral Bands", value: "135 - 250+", highlight: "Bands" },
-    { label: "Swath Width", value: "40 km", highlight: "" },
-    { label: "Revisit Time", value: "24 Hours", highlight: "Daily" },
-  ]
-
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Innovation</h2>
-        <p className="text-purple-400 mb-8">Hyperspectral Technology Deep Dive</p>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <GlassCard className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <Cpu className="w-6 h-6 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">The Firefly Advantage</h3>
-            </div>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Standard satellites capture light in <span className="text-gray-400">4-8 broad bands</span>{" "}
-              (Multispectral). Pixxel&apos;s Firefly satellites capture light across{" "}
-              <span className="text-purple-400 font-bold">150+ to 250+ narrow, continuous bands</span> in the VNIR and
-              SWIR spectrums (450-2500 nm).
-            </p>
-            <p className="text-gray-300 leading-relaxed">
-              Every material on Earth has a unique{" "}
-              <span className="text-purple-400">&quot;spectral fingerprint.&quot;</span> By analyzing hundreds of bands,
-              Pixxel can distinguish between healthy and stressed crops, identify specific minerals, or detect gas
-              leaks—things <span className="text-red-400">invisible</span> to standard cameras.
-            </p>
-          </GlassCard>
-
-          <GlassCard className="bg-gradient-to-br from-purple-900/50 to-violet-900/50">
-            <h3 className="text-lg font-semibold text-white mb-4">5-Meter Breakthrough</h3>
-            <p className="text-5xl font-bold text-purple-400 mb-2">5m</p>
-            <p className="text-gray-400 text-sm">Spatial Resolution</p>
-            <p className="text-gray-300 text-xs mt-4">vs. 30m for scientific missions like EnMAP</p>
-          </GlassCard>
-        </div>
-
-        <h3 className="text-xl font-semibold text-white mt-8 mb-4">Technical Specifications</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {specs.map((spec, index) => (
-            <GlassCard key={index} className="text-center">
-              <p className="text-gray-400 text-sm mb-2">{spec.label}</p>
-              <p className="text-2xl font-bold text-white">{spec.value}</p>
-              {spec.highlight && <p className="text-purple-400 text-xs mt-1">{spec.highlight}</p>}
-            </GlassCard>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 5: Funding
-function Slide5() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Fuel</h2>
-        <p className="text-purple-400 mb-8">Funding & Investors</p>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <GlassCard className="md:col-span-2">
-            <BarChart data={fundingData} dataKey="amount" label="Cumulative Funding by Round ($M)" />
-          </GlassCard>
-
-          <GlassCard className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/20">
-            <DollarSign className="w-8 h-8 text-green-400 mb-4" />
-            <p className="text-gray-400 text-sm">Total Raised</p>
-            <p className="text-4xl font-bold text-green-400">$97M</p>
-            <p className="text-gray-400 text-xs mt-2">Highest-funded space tech startup in India</p>
-          </GlassCard>
-        </div>
-
-        <h3 className="text-xl font-semibold text-white mt-8 mb-4">Key Investment Milestones</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <GlassCard>
-            <p className="text-purple-400 font-semibold mb-2">Series A (2022)</p>
-            <p className="text-2xl font-bold text-white">$27M</p>
-            <p className="text-gray-400 text-sm">Led by Radical Ventures & Seraphim Space</p>
-          </GlassCard>
-          <GlassCard className="border-yellow-500/30 bg-yellow-900/10">
-            <p className="text-yellow-400 font-semibold mb-2">Series B - The Google Moment (2023)</p>
-            <p className="text-2xl font-bold text-white">$36M</p>
-            <p className="text-gray-400 text-sm">Led by Google — Big Tech validation</p>
-          </GlassCard>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 6: Revenue
-function Slide6() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Engine</h2>
-        <p className="text-purple-400 mb-8">Financial Growth (FY24)</p>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <GlassCard className="border-green-500/20">
-            <TrendingUp className="w-6 h-6 text-green-400 mb-4" />
-            <p className="text-gray-400 text-sm mb-2">FY24 Revenue</p>
-            <p className="text-4xl font-bold text-green-400">₹28.7 Cr</p>
-            <p className="text-gray-400 text-sm mt-2">~$3.5M USD</p>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="px-3 py-1 bg-green-600/30 rounded-full text-xs text-green-300">+87% YoY</span>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="border-red-500/20">
-            <TrendingUp className="w-6 h-6 text-red-400 mb-4 rotate-180" />
-            <p className="text-gray-400 text-sm mb-2">FY24 Loss (Strategic Investment)</p>
-            <p className="text-4xl font-bold text-red-400">₹20.4 Cr</p>
-            <p className="text-gray-400 text-sm mt-2">~$2.5M USD</p>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="px-3 py-1 bg-red-600/30 rounded-full text-xs text-red-300">R&D Phase</span>
-            </div>
-          </GlassCard>
-        </div>
-
-        <GlassCard className="mt-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Revenue vs Loss Comparison</h3>
-          <div className="space-y-4">
-            {revenueData.map((item, index) => (
-              <div key={index} className="space-y-2">
-                <p className="text-gray-400 text-sm">{item.year}</p>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-xs text-gray-400">Revenue</span>
-                    </div>
-                    <div className="bg-white/10 rounded-full h-4 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(item.revenue / 30) * 100}%` }}
-                        transition={{ duration: 1, delay: index * 0.2 }}
-                        className="h-full bg-green-500 rounded-full"
-                      />
-                    </div>
-                    <p className="text-xs text-green-400 mt-1">₹{item.revenue} Cr</p>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <span className="text-xs text-gray-400">Loss</span>
-                    </div>
-                    <div className="bg-white/10 rounded-full h-4 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(item.loss / 30) * 100}%` }}
-                        transition={{ duration: 1, delay: index * 0.2 + 0.1 }}
-                        className="h-full bg-red-500 rounded-full"
-                      />
-                    </div>
-                    <p className="text-xs text-red-400 mt-1">₹{item.loss} Cr</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 7: Competitors
-function Slide7() {
-  const competitors = [
-    { name: "Pixxel", resolution: "5m", revisit: "Daily", focus: "Commercial & Defense", highlight: true },
-    { name: "Planet (Tanager)", resolution: "30m", revisit: "Varies", focus: "Methane/Climate", highlight: false },
-    {
-      name: "EnMAP (Germany)",
-      resolution: "30m",
-      revisit: "4-27 Days",
-      focus: "Scientific Research",
-      highlight: false,
-    },
-    { name: "Satellogic", resolution: "25m", revisit: "Daily", focus: "Commercial", highlight: false },
-  ]
-
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Landscape</h2>
-        <p className="text-purple-400 mb-8">Competitor Comparison</p>
-
-        <GlassCard className="mb-6">
-          <h3 className="text-lg font-semibold text-white mb-4">The Resolution Gap</h3>
-          <p className="text-gray-300 leading-relaxed">
-            Pixxel&apos;s strategic moat is defined by the{" "}
-            <span className="text-purple-400 font-bold">&quot;Resolution Gap.&quot;</span> While competitors offer
-            hyperspectral at 25-30m resolution, Pixxel achieves <span className="text-purple-400 font-bold">5m</span>
-            —enabling precision agriculture and defense markets that competitors cannot effectively resolve.
-          </p>
-        </GlassCard>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left py-4 px-4 text-gray-400 font-medium">Company</th>
-                <th className="text-left py-4 px-4 text-gray-400 font-medium">Resolution</th>
-                <th className="text-left py-4 px-4 text-gray-400 font-medium">Revisit</th>
-                <th className="text-left py-4 px-4 text-gray-400 font-medium">Focus</th>
-              </tr>
-            </thead>
-            <tbody>
-              {competitors.map((comp, index) => (
-                <tr key={index} className={`border-b border-white/5 ${comp.highlight ? "bg-purple-900/30" : ""}`}>
-                  <td className="py-4 px-4">
-                    <span className={comp.highlight ? "text-purple-400 font-bold" : "text-white"}>{comp.name}</span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <span className={comp.highlight ? "text-purple-400 font-bold" : "text-gray-300"}>
-                      {comp.resolution}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-gray-300">{comp.revisit}</td>
-                  <td className="py-4 px-4 text-gray-300">{comp.focus}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 8: Agriculture
-function Slide8() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Impact</h2>
-        <p className="text-purple-400 mb-8">Agriculture & Environment</p>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <GlassCard className="border-green-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-600/30 rounded-lg flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">MNCFC Partnership</h3>
-                <p className="text-green-400 text-sm">India</p>
-              </div>
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Partnered with the Indian Ministry of Agriculture to improve crop yield estimation and insurance
-              settlements. Detects crop stress{" "}
-              <span className="text-green-400 font-semibold">weeks before visual signs appear</span>, aiding millions of
-              farmers.
-            </p>
-          </GlassCard>
-
-          <GlassCard className="border-yellow-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-yellow-600/30 rounded-lg flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-yellow-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">DataFarming</h3>
-                <p className="text-yellow-400 text-sm">Australia</p>
-              </div>
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Partnership with Australian agritech firm bringing hyperspectral insights to tens of thousands of
-              farmers—offering
-              <span className="text-yellow-400 font-semibold"> 8x more data</span> than conventional tools to optimize
-              fertilizer use.
-            </p>
-          </GlassCard>
-
-          <GlassCard className="md:col-span-2 border-orange-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-orange-600/30 rounded-lg flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-orange-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Coactive Sustainability</h3>
-                <p className="text-orange-400 text-sm">Spain</p>
-              </div>
-            </div>
-            <p className="text-gray-300 leading-relaxed">
-              Monitoring vineyards and olive groves year-round, helping insurers value assets based on moisture and
-              health scores. Enabling sustainable agriculture through precision monitoring.
-            </p>
-          </GlassCard>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 9: Defense
-function Slide9() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Impact</h2>
-        <p className="text-purple-400 mb-8">Defense & Strategic Applications</p>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <GlassCard className="border-orange-500/20 bg-gradient-to-br from-orange-900/20 to-amber-900/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-orange-600/30 rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-orange-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">iDEX Prime</h3>
-                <p className="text-orange-400">India Ministry of Defence</p>
-              </div>
-            </div>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Winner of the iDEX Prime Space Grant to build miniaturized satellites for the Indian Air Force with
-              <span className="text-orange-400 font-semibold"> MWIR (Mid-Wave Infrared) payloads</span>.
-            </p>
-            <div className="bg-black/30 rounded-lg p-4">
-              <p className="text-gray-400 text-sm">Capabilities:</p>
-              <ul className="text-gray-300 text-sm mt-2 space-y-1">
-                <li>• Detect heat signatures</li>
-                <li>• Camouflaged vehicle detection</li>
-                <li>• Night-time surveillance</li>
-              </ul>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="border-blue-500/20 bg-gradient-to-br from-blue-900/20 to-indigo-900/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-600/30 rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">NRO Contract</h3>
-                <p className="text-blue-400">US Intelligence</p>
-              </div>
-            </div>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Secured a <span className="text-blue-400 font-bold">5-year contract</span> with the US National
-              Reconnaissance Office (NRO).
-            </p>
-            <div className="bg-black/30 rounded-lg p-4">
-              <p className="text-gray-400 text-sm">Significance:</p>
-              <p className="text-gray-300 text-sm mt-2">
-                Highlights the geopolitical trust Pixxel has earned, allowing the US intelligence community to access
-                its commercial data for strategic enhancements.
-              </p>
-            </div>
-          </GlassCard>
-        </div>
-
-        <GlassCard className="mt-6">
-          <h3 className="text-lg font-semibold text-white mb-3">Dual-Use Technology</h3>
-          <p className="text-gray-300 leading-relaxed">
-            Pixxel bridges the gap between <span className="text-purple-400">commercial speed</span> and
-            <span className="text-purple-400"> military requirements</span>—a key strategic positioning in the global
-            space economy.
-          </p>
-        </GlassCard>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 10: Future Vision
-function Slide10() {
-  return (
-    <div className="h-full overflow-y-auto py-8 px-4">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">The Horizon</h2>
-        <p className="text-purple-400 mb-8">Future Vision & Asteroid Mining</p>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <GlassCard className="md:col-span-2">
-            <h3 className="text-xl font-semibold text-white mb-4">Phase 1: Firefly Constellation</h3>
-            <p className="text-gray-300 leading-relaxed mb-4">
-              Building towards a constellation of <span className="text-purple-400 font-bold">24 satellites</span>{" "}
-              providing global daily coverage with 5-meter hyperspectral resolution.
-            </p>
-            <div className="flex gap-4 flex-wrap">
-              <div className="bg-white/5 rounded-lg px-4 py-2">
-                <p className="text-2xl font-bold text-purple-400">24</p>
-                <p className="text-xs text-gray-400">Satellites</p>
-              </div>
-              <div className="bg-white/5 rounded-lg px-4 py-2">
-                <p className="text-2xl font-bold text-purple-400">24h</p>
-                <p className="text-xs text-gray-400">Revisit Time</p>
-              </div>
-              <div className="bg-white/5 rounded-lg px-4 py-2">
-                <p className="text-2xl font-bold text-purple-400">Global</p>
-                <p className="text-xs text-gray-400">Coverage</p>
-              </div>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="bg-gradient-to-br from-amber-900/30 to-yellow-900/30 border-yellow-500/30">
-            <Telescope className="w-8 h-8 text-yellow-400 mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">Asteroid Mining</h3>
-            <p className="text-gray-300 text-sm">The ultimate vision</p>
-          </GlassCard>
-        </div>
-
-        <GlassCard className="mt-6 border-yellow-500/20">
-          <h3 className="text-xl font-semibold text-white mb-4">Beyond Earth: Asteroid Prospecting</h3>
-          <p className="text-gray-300 leading-relaxed mb-4">
-            The logic is consistent: if you can identify <span className="text-yellow-400">lithium in Nevada</span> from
-            space, you can identify <span className="text-yellow-400">platinum on an asteroid</span>. Pixxel aims to map
-            the asteroid belt to identify resource-rich targets, providing the{" "}
-            <span className="text-purple-400 font-bold">&quot;treasure maps&quot;</span> for future mining missions.
-          </p>
-          <div className="bg-black/30 rounded-lg p-4">
-            <p className="text-gray-400 text-sm italic">
-              &quot;From an Earth data company to a solar system resources company.&quot;
-            </p>
-          </div>
-        </GlassCard>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide 11: Thank You
-function Slide11() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">Thank You</h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-violet-600 mx-auto mb-8 rounded-full"></div>
-        <p className="text-xl text-gray-400 mb-2">Pixxel Space</p>
-        <p className="text-purple-400 mb-8">Seeing the Unseen</p>
-
-        <div className="flex gap-4 justify-center flex-wrap">
-          <GlassCard className="px-6 py-3">
-            <p className="text-gray-400 text-sm">Founded</p>
-            <p className="text-white font-bold">2019</p>
-          </GlassCard>
-          <GlassCard className="px-6 py-3">
-            <p className="text-gray-400 text-sm">Raised</p>
-            <p className="text-green-400 font-bold">$97M</p>
-          </GlassCard>
-          <GlassCard className="px-6 py-3">
-            <p className="text-gray-400 text-sm">Resolution</p>
-            <p className="text-purple-400 font-bold">5m</p>
-          </GlassCard>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
-// Slide indicator dots
+// Slide indicator component
 function SlideIndicator({ total, current, onSelect }) {
-  const slideNames = [
-    "Home",
-    "Genesis",
-    "Founders",
-    "Technology",
-    "Funding",
-    "Revenue",
-    "Competitors",
-    "Agriculture",
-    "Defense",
-    "Vision",
-    "End",
-  ]
-
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <GlassCard className="flex items-center gap-2 px-4 py-2">
-        {Array.from({ length: total }, (_, i) => (
-          <button key={i} onClick={() => onSelect(i)} className="group relative" title={slideNames[i]}>
-            <div
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === current ? "bg-purple-500 scale-125" : "bg-white/30 hover:bg-white/50"
-              }`}
-            />
-          </button>
+      <GlassCard className="px-4 py-3 flex gap-2">
+        {Array.from({ length: total }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => onSelect(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === current ? "bg-purple-500 w-6" : "bg-white/30 hover:bg-white/50"
+            }`}
+          />
         ))}
       </GlassCard>
     </div>
   )
 }
 
-// Main App
+// Slide 1: Title Slide
+function Slide1({ onLaunch }) {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="slide-fade-in">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center">
+              <LucideIcons.Telescope className="w-8 h-8 text-white" />
+            </div>
+            <span className="text-5xl font-bold text-white tracking-tight">PIXXEL</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 text-balance">
+            Pioneering Hyperspectral{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-400">
+              Earth Imaging
+            </span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+            Bangalore-Based Space-Tech Startup Building the World&apos;s Highest-Resolution Hyperspectral Satellite
+            Constellation
+          </p>
+          <button
+            onClick={onLaunch}
+            className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full text-white font-semibold hover:from-purple-500 hover:to-violet-500 transition-all hover:scale-105"
+          >
+            <LucideIcons.Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            Launch Presentation
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 2: Company Overview
+function Slide2() {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Home className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Company Overview</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <GlassCard className="hover:bg-white/10 transition-all">
+            <h3 className="text-purple-400 font-semibold mb-3">Founded</h3>
+            <p className="text-4xl font-bold text-white mb-2">2019</p>
+            <p className="text-gray-400">by Awais Ahmed & Kshitij Khandelwal (IIT-K alumni)</p>
+          </GlassCard>
+
+          <GlassCard className="hover:bg-white/10 transition-all">
+            <h3 className="text-purple-400 font-semibold mb-3">Headquarters</h3>
+            <p className="text-4xl font-bold text-white mb-2">Bangalore</p>
+            <p className="text-gray-400">India&apos;s Silicon Valley</p>
+          </GlassCard>
+
+          <GlassCard className="hover:bg-white/10 transition-all">
+            <h3 className="text-purple-400 font-semibold mb-3">Mission</h3>
+            <p className="text-white">Deploy largest commercial hyperspectral satellite constellation</p>
+            <p className="text-gray-400 mt-2">5-meter resolution imagery</p>
+          </GlassCard>
+
+          <GlassCard className="hover:bg-white/10 transition-all">
+            <h3 className="text-purple-400 font-semibold mb-3">Vision</h3>
+            <p className="text-white">&quot;Health monitor for the planet&quot;</p>
+            <p className="text-gray-400 mt-2">Real-time Earth intelligence</p>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 3: Hyperspectral Technology
+function Slide3() {
+  const bands = [
+    { name: "Visible", range: "400-700nm", color: "from-violet-500 via-green-500 to-red-500" },
+    { name: "Near-IR", range: "700-1000nm", color: "from-red-600 to-red-900" },
+    { name: "SWIR", range: "1000-2500nm", color: "from-red-900 to-amber-900" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Cpu className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Hyperspectral Technology</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <GlassCard className="mb-6">
+              <h3 className="text-purple-400 font-semibold mb-4">What is Hyperspectral?</h3>
+              <p className="text-gray-300 mb-4">
+                Unlike RGB cameras (3 bands), hyperspectral captures{" "}
+                <span className="text-purple-400 font-bold">150+ narrow bands</span> across the electromagnetic
+                spectrum.
+              </p>
+              <p className="text-gray-400">
+                This reveals chemical composition, material properties, and subtle changes invisible to traditional
+                imaging.
+              </p>
+            </GlassCard>
+
+            <GlassCard>
+              <h3 className="text-purple-400 font-semibold mb-4">Spectral Bands</h3>
+              <div className="space-y-3">
+                {bands.map((band, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className={`w-16 h-4 rounded bg-gradient-to-r ${band.color}`} />
+                    <div>
+                      <span className="text-white font-medium">{band.name}</span>
+                      <span className="text-gray-500 ml-2 text-sm">{band.range}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+
+          <GlassCard className="flex flex-col justify-center">
+            <h3 className="text-purple-400 font-semibold mb-4">Pixxel Advantage</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-purple-400 font-bold">5m</span>
+                </div>
+                <div>
+                  <p className="text-white font-medium">Highest Resolution</p>
+                  <p className="text-gray-400 text-sm">Industry-leading 5-meter hyperspectral imagery</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-purple-400 font-bold">24h</span>
+                </div>
+                <div>
+                  <p className="text-white font-medium">Daily Revisit</p>
+                  <p className="text-gray-400 text-sm">Full constellation enables daily global coverage</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-purple-400 font-bold">AI</span>
+                </div>
+                <div>
+                  <p className="text-white font-medium">Aurora Platform</p>
+                  <p className="text-gray-400 text-sm">ML-powered analytics for actionable insights</p>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 4: Satellite Constellation
+function Slide4() {
+  const satellites = [
+    { name: "Shakuntala (TD-2)", year: "2022", status: "Operational", desc: "Technology demonstrator" },
+    { name: "Fireflies", year: "2024-25", status: "Launching", desc: "6 satellites, 5m resolution" },
+    { name: "Honeybees", year: "2025-26", status: "Planned", desc: "18 satellites, full constellation" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Rocket className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Satellite Constellation</h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {satellites.map((sat, i) => (
+            <GlassCard key={i} className="hover:bg-white/10 transition-all hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-4">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    sat.status === "Operational"
+                      ? "bg-green-500/20 text-green-400"
+                      : sat.status === "Launching"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : "bg-blue-500/20 text-blue-400"
+                  }`}
+                >
+                  {sat.status}
+                </span>
+                <span className="text-gray-500 text-sm">{sat.year}</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{sat.name}</h3>
+              <p className="text-gray-400">{sat.desc}</p>
+            </GlassCard>
+          ))}
+        </div>
+
+        <GlassCard>
+          <div className="flex flex-wrap justify-between gap-6 text-center">
+            <div>
+              <p className="text-4xl font-bold text-purple-400">24</p>
+              <p className="text-gray-400">Total Satellites</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-purple-400">5m</p>
+              <p className="text-gray-400">Resolution</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-purple-400">150+</p>
+              <p className="text-gray-400">Spectral Bands</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-purple-400">24hr</p>
+              <p className="text-gray-400">Global Revisit</p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  )
+}
+
+// Slide 5: Leadership Team
+function Slide5() {
+  const leaders = [
+    { name: "Awais Ahmed", role: "Co-founder & CEO", bg: "Aerospace Engineer, Ex-ISRO, IIT-K" },
+    { name: "Kshitij Khandelwal", role: "Co-founder & CTO", bg: "Spacecraft Systems, IIT-K" },
+  ]
+
+  const stats = [
+    { value: "200+", label: "Team Members" },
+    { value: "40+", label: "Countries Served" },
+    { value: "6", label: "Global Offices" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Users className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Leadership Team</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {leaders.map((leader, i) => (
+            <GlassCard key={i} className="hover:bg-white/10 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">{leader.name[0]}</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">{leader.name}</h3>
+                  <p className="text-purple-400">{leader.role}</p>
+                </div>
+              </div>
+              <p className="text-gray-400">{leader.bg}</p>
+            </GlassCard>
+          ))}
+        </div>
+
+        <GlassCard>
+          <div className="flex flex-wrap justify-around gap-6 text-center">
+            {stats.map((stat, i) => (
+              <div key={i}>
+                <p className="text-4xl font-bold text-purple-400">{stat.value}</p>
+                <p className="text-gray-400 text-sm">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  )
+}
+
+// Slide 6: Funding & Financials
+function Slide6() {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.DollarSign className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Funding & Financials</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <GlassCard>
+            <h3 className="text-xl font-bold text-white mb-6">Total Raised: $92M+</h3>
+            <BarChart data={fundingData} dataKey="amount" label="Funding Rounds" />
+          </GlassCard>
+
+          <GlassCard>
+            <h3 className="text-xl font-bold text-white mb-6">Revenue Growth</h3>
+            <BarChart data={revenueData} dataKey="revenue" label="Annual Revenue" color="#22c55e" />
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <p className="text-gray-400 text-sm">Key Investors</p>
+              <p className="text-white mt-2">Google, Radical Ventures, Lightspeed, Blume, Athera VP</p>
+            </div>
+          </GlassCard>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 mt-6">
+          <GlassCard className="text-center">
+            <p className="text-3xl font-bold text-green-400">87%</p>
+            <p className="text-gray-400 text-sm">Revenue Growth YoY</p>
+          </GlassCard>
+          <GlassCard className="text-center">
+            <p className="text-3xl font-bold text-purple-400">$306M</p>
+            <p className="text-gray-400 text-sm">Valuation (2024)</p>
+          </GlassCard>
+          <GlassCard className="text-center">
+            <p className="text-3xl font-bold text-yellow-400">2027</p>
+            <p className="text-gray-400 text-sm">IPO Target</p>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 7: Use Cases
+function Slide7() {
+  const useCases = [
+    {
+      icon: LucideIcons.Leaf,
+      title: "Agriculture",
+      desc: "Crop health, soil moisture, yield prediction, pest detection",
+    },
+    { icon: LucideIcons.Shield, title: "Defense & Intel", desc: "GEOSAT signed for reconnaissance, border monitoring" },
+    {
+      icon: LucideIcons.Target,
+      title: "Mining & Energy",
+      desc: "Mineral exploration, oil spill detection, pipeline monitoring",
+    },
+    { icon: LucideIcons.TrendingUp, title: "Environmental", desc: "Deforestation, carbon tracking, methane detection" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Target className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Industry Applications</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {useCases.map((useCase, i) => (
+            <GlassCard key={i} className="hover:bg-white/10 transition-all hover:-translate-y-1">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <useCase.icon className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
+                  <p className="text-gray-400">{useCase.desc}</p>
+                </div>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+
+        <GlassCard className="mt-6">
+          <div className="flex flex-wrap justify-between gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold text-purple-400">$3.3B</p>
+              <p className="text-gray-400 text-sm">TAM by 2032</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-400">40+</p>
+              <p className="text-gray-400 text-sm">Countries Served</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-400">150+</p>
+              <p className="text-gray-400 text-sm">Enterprise Clients</p>
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  )
+}
+
+// Slide 8: Aurora Platform
+function Slide8() {
+  const features = [
+    { title: "Automated Processing", desc: "Raw imagery to analysis-ready products" },
+    { title: "ML Models", desc: "Pre-built models for agriculture, mining, environment" },
+    { title: "API Access", desc: "Integrate satellite data into existing workflows" },
+    { title: "Custom Analytics", desc: "Tailored solutions for enterprise needs" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Cpu className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Aurora Analytics Platform</h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <GlassCard className="h-full">
+              <h3 className="text-xl font-bold text-white mb-6">End-to-End Solution</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {features.map((feature, i) => (
+                  <div key={i} className="p-4 bg-white/5 rounded-xl">
+                    <h4 className="text-purple-400 font-semibold mb-2">{feature.title}</h4>
+                    <p className="text-gray-400 text-sm">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+
+          <GlassCard>
+            <h3 className="text-xl font-bold text-white mb-6">Key Metrics</h3>
+            <div className="space-y-6">
+              <div>
+                <p className="text-3xl font-bold text-purple-400">95%</p>
+                <p className="text-gray-400 text-sm">Accuracy Rate</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-green-400">10x</p>
+                <p className="text-gray-400 text-sm">Faster Analysis</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-yellow-400">50+</p>
+                <p className="text-gray-400 text-sm">Pre-built Models</p>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 9: Competitive Landscape
+function Slide9() {
+  const competitors = [
+    { name: "Planet Labs", focus: "RGB/Multispectral", res: "3-5m", edge: "Large fleet" },
+    { name: "Satellogic", focus: "Multispectral", res: "1m", edge: "High resolution" },
+    { name: "BlackBridge", focus: "Multispectral", res: "5m", edge: "Agricultural focus" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.TrendingUp className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Competitive Landscape</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <GlassCard>
+            <h3 className="text-xl font-bold text-white mb-6">Market Players</h3>
+            <div className="space-y-4">
+              {competitors.map((comp, i) => (
+                <div key={i} className="p-4 bg-white/5 rounded-xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-white font-semibold">{comp.name}</span>
+                    <span className="text-gray-500 text-sm">{comp.res}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm">
+                    {comp.focus} - {comp.edge}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="bg-gradient-to-br from-purple-900/30 to-violet-900/30">
+            <h3 className="text-xl font-bold text-white mb-6">Pixxel Differentiation</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                <p className="text-white">Only pure-play hyperspectral</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                <p className="text-white">Highest resolution (5m) in class</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                <p className="text-white">150+ bands vs 4-8 typical</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                <p className="text-white">Integrated analytics platform</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                <p className="text-white">Cost-effective Indian manufacturing</p>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 10: Key Partnerships
+function Slide10() {
+  const partnerships = [
+    { name: "Google", type: "Investor & Cloud Partner", desc: "Strategic investment, Google Cloud infrastructure" },
+    { name: "ISRO", type: "Launch Partner", desc: "PSLV launches, technical collaboration" },
+    { name: "NASA", type: "Research Partner", desc: "Landsat calibration, data validation" },
+    { name: "GEOSAT", type: "Defense Partner", desc: "Indian defense & intelligence contracts" },
+  ]
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="flex items-center gap-3 mb-8">
+          <LucideIcons.Users className="w-8 h-8 text-purple-400" />
+          <h2 className="text-3xl font-bold text-white">Strategic Partnerships</h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {partnerships.map((partner, i) => (
+            <GlassCard key={i} className="hover:bg-white/10 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500/30 to-violet-500/30 rounded-xl flex items-center justify-center">
+                  <span className="text-xl font-bold text-purple-400">{partner.name[0]}</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{partner.name}</h3>
+                  <p className="text-purple-400 text-sm">{partner.type}</p>
+                </div>
+              </div>
+              <p className="text-gray-400">{partner.desc}</p>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Slide 11: Summary & Future
+function Slide11() {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-8">
+      <div className="max-w-5xl w-full slide-fade-in">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Building the{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-400">
+              Future of Earth Observation
+            </span>
+          </h2>
+          <p className="text-xl text-gray-400">Health monitor for the planet</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <GlassCard className="text-center">
+            <p className="text-4xl font-bold text-purple-400 mb-2">2025</p>
+            <p className="text-white font-semibold">Fireflies Complete</p>
+            <p className="text-gray-400 text-sm">6 satellites operational</p>
+          </GlassCard>
+          <GlassCard className="text-center">
+            <p className="text-4xl font-bold text-green-400 mb-2">2026</p>
+            <p className="text-white font-semibold">Full Constellation</p>
+            <p className="text-gray-400 text-sm">24 satellites, global coverage</p>
+          </GlassCard>
+          <GlassCard className="text-center">
+            <p className="text-4xl font-bold text-yellow-400 mb-2">2027</p>
+            <p className="text-white font-semibold">IPO Target</p>
+            <p className="text-gray-400 text-sm">Public market debut</p>
+          </GlassCard>
+        </div>
+
+        <GlassCard className="text-center bg-gradient-to-r from-purple-900/30 to-violet-900/30">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <LucideIcons.Telescope className="w-8 h-8 text-purple-400" />
+            <span className="text-3xl font-bold text-white">PIXXEL</span>
+          </div>
+          <p className="text-gray-300 max-w-2xl mx-auto">
+            From Bangalore to the stars - Pixxel is revolutionizing how we see and understand our planet with
+            hyperspectral intelligence.
+          </p>
+        </GlassCard>
+      </div>
+    </div>
+  )
+}
+
+// Main Presentation Component
 export default function PixxelPresentation() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [particlesInit, setParticlesInit] = useState(false)
   const totalSlides = 11
 
-  const particlesLoaded = useCallback(async (engine) => {
-    await loadSlim(engine)
-    setParticlesInit(true)
-  }, [])
+  const nextSlide = () => {
+    if (currentSlide < totalSlides - 1) {
+      setCurrentSlide((prev) => prev + 1)
+    }
+  }
 
-  const nextSlide = () => setCurrentSlide((prev) => Math.min(prev + 1, totalSlides - 1))
-  const prevSlide = () => setCurrentSlide((prev) => Math.max(prev - 1, 0))
-  const goToSlide = (index) => setCurrentSlide(index)
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide((prev) => prev - 1)
+    }
+  }
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index)
+  }
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "ArrowRight" || e.key === " ") nextSlide()
-      if (e.key === "ArrowLeft") prevSlide()
+      if (e.key === "ArrowRight" || e.key === " ") {
+        e.preventDefault()
+        if (currentSlide < totalSlides - 1) {
+          setCurrentSlide((prev) => prev + 1)
+        }
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault()
+        if (currentSlide > 0) {
+          setCurrentSlide((prev) => prev - 1)
+        }
+      }
     }
+
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [currentSlide])
 
   const slides = [
     <Slide1 key={0} onLaunch={nextSlide} />,
@@ -852,23 +771,13 @@ export default function PixxelPresentation() {
 
   return (
     <div className="relative w-full h-screen bg-[#0b0c10] overflow-hidden">
-      {/* Particle Background */}
-      <Particles id="tsparticles" init={particlesLoaded} options={particlesOptions} className="absolute inset-0 z-0" />
+      <Starfield />
 
       {/* Slide Content */}
       <div className="relative z-10 w-full h-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="w-full h-full"
-          >
-            {slides[currentSlide]}
-          </motion.div>
-        </AnimatePresence>
+        <div key={currentSlide} className="w-full h-full slide-enter">
+          {slides[currentSlide]}
+        </div>
       </div>
 
       {/* Navigation Arrows */}
@@ -877,7 +786,7 @@ export default function PixxelPresentation() {
           onClick={prevSlide}
           className="fixed left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <LucideIcons.ChevronLeft className="w-6 h-6" />
         </button>
       )}
 
@@ -886,7 +795,7 @@ export default function PixxelPresentation() {
           onClick={nextSlide}
           className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
         >
-          <ChevronRight className="w-6 h-6" />
+          <LucideIcons.ChevronRight className="w-6 h-6" />
         </button>
       )}
 
