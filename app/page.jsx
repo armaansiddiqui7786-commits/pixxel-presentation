@@ -1,10 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import * as LucideIcons from "lucide-react"
-
-const { ChevronLeft, ChevronRight, Rocket, Users, Cpu, DollarSign, TrendingUp, Target, Leaf, Shield, Telescope, Home } =
-  LucideIcons
+import { useState, useEffect, useCallback } from "react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Rocket,
+  Users,
+  Cpu,
+  DollarSign,
+  TrendingUp,
+  Target,
+  Leaf,
+  Shield,
+  Telescope,
+  Home,
+} from "lucide-react"
 
 // Starfield background component - pure CSS
 function Starfield() {
@@ -132,7 +142,7 @@ function Slide1({ onLaunch }) {
         <div className="text-center">
           <div className="inline-flex items-center gap-3 mb-6">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center">
-              <LucideIcons.Telescope className="w-8 h-8 text-white" />
+              <Telescope className="w-8 h-8 text-white" />
             </div>
             <span className="text-5xl font-bold text-white tracking-tight">PIXXEL</span>
           </div>
@@ -150,7 +160,7 @@ function Slide1({ onLaunch }) {
             onClick={onLaunch}
             className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full text-white font-semibold hover:from-purple-500 hover:to-violet-500 transition-all hover:scale-105"
           >
-            <LucideIcons.Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             Launch Presentation
           </button>
         </div>
@@ -165,7 +175,7 @@ function Slide2() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Home className="w-8 h-8 text-purple-400" />
+          <Home className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Company Overview</h2>
         </div>
 
@@ -211,7 +221,7 @@ function Slide3() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Cpu className="w-8 h-8 text-purple-400" />
+          <Cpu className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Hyperspectral Technology</h2>
         </div>
 
@@ -296,7 +306,7 @@ function Slide4() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Rocket className="w-8 h-8 text-purple-400" />
+          <Rocket className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Satellite Constellation</h2>
         </div>
 
@@ -365,7 +375,7 @@ function Slide5() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Users className="w-8 h-8 text-purple-400" />
+          <Users className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Leadership Team</h2>
         </div>
 
@@ -407,7 +417,7 @@ function Slide6() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.DollarSign className="w-8 h-8 text-purple-400" />
+          <DollarSign className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Funding & Financials</h2>
         </div>
 
@@ -450,41 +460,52 @@ function Slide6() {
 function Slide7() {
   const useCases = [
     {
-      icon: LucideIcons.Leaf,
+      icon: Leaf,
       title: "Agriculture",
       desc: "Crop health, soil moisture, yield prediction, pest detection",
     },
-    { icon: LucideIcons.Shield, title: "Defense & Intel", desc: "GEOSAT signed for reconnaissance, border monitoring" },
     {
-      icon: LucideIcons.Target,
+      icon: Shield,
+      title: "Defense & Intel",
+      desc: "GEOSAT signed for reconnaissance, border monitoring",
+    },
+    {
+      icon: Target,
       title: "Mining & Energy",
       desc: "Mineral exploration, oil spill detection, pipeline monitoring",
     },
-    { icon: LucideIcons.TrendingUp, title: "Environmental", desc: "Deforestation, carbon tracking, methane detection" },
+    {
+      icon: TrendingUp,
+      title: "Environmental",
+      desc: "Deforestation, carbon tracking, methane detection",
+    },
   ]
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Target className="w-8 h-8 text-purple-400" />
+          <Target className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Industry Applications</h2>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {useCases.map((useCase, i) => (
-            <GlassCard key={i} className="hover:bg-white/10 transition-all hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <useCase.icon className="w-6 h-6 text-purple-400" />
+          {useCases.map((useCase, i) => {
+            const IconComponent = useCase.icon
+            return (
+              <GlassCard key={i} className="hover:bg-white/10 transition-all hover:-translate-y-1">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <IconComponent className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
+                    <p className="text-gray-400">{useCase.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
-                  <p className="text-gray-400">{useCase.desc}</p>
-                </div>
-              </div>
-            </GlassCard>
-          ))}
+              </GlassCard>
+            )
+          })}
         </div>
 
         <GlassCard className="mt-6">
@@ -521,7 +542,7 @@ function Slide8() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Cpu className="w-8 h-8 text-purple-400" />
+          <Cpu className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Aurora Analytics Platform</h2>
         </div>
 
@@ -575,7 +596,7 @@ function Slide9() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.TrendingUp className="w-8 h-8 text-purple-400" />
+          <TrendingUp className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Competitive Landscape</h2>
         </div>
 
@@ -641,7 +662,7 @@ function Slide10() {
     <div className="w-full h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-5xl w-full slide-fade-in">
         <div className="flex items-center gap-3 mb-8">
-          <LucideIcons.Users className="w-8 h-8 text-purple-400" />
+          <Users className="w-8 h-8 text-purple-400" />
           <h2 className="text-3xl font-bold text-white">Strategic Partnerships</h2>
         </div>
 
@@ -701,7 +722,7 @@ function Slide11() {
 
         <GlassCard className="text-center bg-gradient-to-r from-purple-900/30 to-violet-900/30">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <LucideIcons.Telescope className="w-8 h-8 text-purple-400" />
+            <Telescope className="w-8 h-8 text-purple-400" />
             <span className="text-3xl font-bold text-white">PIXXEL</span>
           </div>
           <p className="text-gray-300 max-w-2xl mx-auto">
@@ -717,43 +738,52 @@ function Slide11() {
 // Main Presentation Component
 export default function PixxelPresentation() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isClient, setIsClient] = useState(false)
   const totalSlides = 11
 
-  const nextSlide = () => {
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const nextSlide = useCallback(() => {
     if (currentSlide < totalSlides - 1) {
       setCurrentSlide((prev) => prev + 1)
     }
-  }
+  }, [currentSlide])
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (currentSlide > 0) {
       setCurrentSlide((prev) => prev - 1)
     }
-  }
+  }, [currentSlide])
 
-  const goToSlide = (index) => {
+  const goToSlide = useCallback((index) => {
     setCurrentSlide(index)
-  }
+  }, [])
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowRight" || e.key === " ") {
         e.preventDefault()
-        if (currentSlide < totalSlides - 1) {
-          setCurrentSlide((prev) => prev + 1)
-        }
+        setCurrentSlide((prev) => Math.min(prev + 1, totalSlides - 1))
       } else if (e.key === "ArrowLeft") {
         e.preventDefault()
-        if (currentSlide > 0) {
-          setCurrentSlide((prev) => prev - 1)
-        }
+        setCurrentSlide((prev) => Math.max(prev - 1, 0))
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [currentSlide])
+  }, [])
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-screen bg-[#0b0c10] flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    )
+  }
 
   const slides = [
     <Slide1 key={0} onLaunch={nextSlide} />,
@@ -786,7 +816,7 @@ export default function PixxelPresentation() {
           onClick={prevSlide}
           className="fixed left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
         >
-          <LucideIcons.ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6" />
         </button>
       )}
 
@@ -795,7 +825,7 @@ export default function PixxelPresentation() {
           onClick={nextSlide}
           className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
         >
-          <LucideIcons.ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-6 h-6" />
         </button>
       )}
 
